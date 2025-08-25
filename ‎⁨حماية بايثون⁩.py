@@ -16,14 +16,14 @@ import zipfile
 import threading
 import asyncio
 
-BOT_TOKEN = 'توكنك' 
-ADMIN_ID = ايديك 
+BOT_TOKEN = '8170570512:AAEs3-OcMqUMu7pIvACgd1JFTBAJq56ZyE8' 
+ADMIN_ID = 7934749229 
 RAPIDAPI_KEY = "8d5cf5b7d8msh21830cd4a0d5618p128e40jsn41258ae9b141" 
 
-BOT_PERSONALITY_NAME = 'yosef'
+BOT_PERSONALITY_NAME = 'SHM'
 DEFAULT_BOT_LANGUAGE = 'egyptian' 
-DEVELOPER_USERNAME = '@@NF_FN_NN'
-DEVELOPER_CHANNEL = '@NF_FN_NN'
+DEVELOPER_USERNAME = '@JO7NB'
+DEVELOPER_CHANNEL = '@JO7NB'
 DEFAULT_WELCOME_MESSAGE = '''❄️ This is me ميرا ب الانجليزي 🌸
 
 🎭 A smart robot with a distinct personality
