@@ -1,0 +1,122 @@
+local https = require("ssl.https")
+local ltn12 = require("ltn12")
+local cjson = require("cjson.safe")
+
+local API = "https://api.telegram.org/bot" .. BOT_TOKEN .. "/"
+
+local STORE_FILE = "edits.json"
+
+
+local function load_store()
+  local f = io.open(STORE_FILE, "r")
+  if not f then return {} end
+  local data = f:read("*a")
+  f:close()
+  local ok, decoded = pcall(cjson.decode, data)
+  return (ok and decoded) or {}
+end
+
+local function save_store(tbl)
+  local f = io.open(STORE_FILE, "w+")
+  if not f then return false end
+  f:write(cjson.encode(tbl))
+  f:close()
+  return true
+end
+
+local store = load_store()
+
+local function send_message(chat_id, text)
+  local body = cjson.encode({ chat_id = chat_id, text = text })
+  https.request{
+    url = API .. "sendMessage",
+    method = "POST",
+    headers = {
+      ["Content-Type"] = "application/json",
+      ["Content-Length"] = tostring(#body)
+    },
+    source = ltn12.source.string(body),
+  }
+end
+  
+local function send_video(chat_id, video)
+  local body = cjson.encode({ chat_id = chat_id, video = video })
+  https.request{
+    url = API .. "sendVideo",
+    method = "POST",
+    headers = {
+      ["Content-Type"] = "application/json",
+      ["Content-Length"] = tostring(#body)
+    },
+    source = ltn12.source.string(body),
+  }
+end
+
+ 
+local function handle_command(msg)
+  local text = msg.text or ""
+  local chat_id = msg.chat.id
+
+     
+  if text:match("^اضف ايدت") then
+    local video = text:match("^اضف ايدت%s+(.+)$")
+    if msg.video then
+      table.insert(store, msg.video.file_id)
+      save_store(store)
+      return send_message(chat_id, "✅ تم إضافة المقطع.")
+    elseif video then
+      table.insert(store, video)
+      save_store(store)
+      return send_message(chat_id, " تم إضافة الفيديو.")
+    else
+      return send_message(chat_id, " أرسل فيديو أو رابط الفيديو  ).")
+    end
+  end
+
+     
+  if text == "مسح ايدت" then
+    store = {}
+    save_store(store)
+    return send_message(chat_id, " تم مسح جميع المقاطع.")
+  end
+
+    
+  if text == "ايدت" then
+    if #store == 0 then
+      return send_message(chat_id, " عذرا المطور لم يقم باضافه مقاطع ايدت  .")
+    end
+    for _, v in ipairs(store) do
+      if v:match("^http") then
+        send_message(chat_id, v)
+      else
+        send_video(chat_id, v)
+      end
+    end
+  end
+end
+
+  
+local offset = 0
+while true do
+  local res = {}
+  local body = cjson.encode{ offset = offset+1, timeout = 20 }
+  https.request{
+    url = API .. "getUpdates",
+    method = "POST",
+    headers = {
+      ["Content-Type"] = "application/json",
+      ["Content-Length"] = tostring(#body)
+    },
+    source = ltn12.source.string(body),
+    sink = ltn12.sink.table(res),
+  }
+  local ok, data = pcall(cjson.decode, table.concat(res))
+  if ok and data and data.result then
+    for _, update in ipairs(data.result) do
+      offset = update.update_id
+      if update.message then
+        handle_command(update.message)
+      end
+    end
+  end
+end
