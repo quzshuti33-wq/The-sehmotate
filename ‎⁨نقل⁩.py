@@ -11,7 +11,7 @@ import time
 logging.basicConfig(level=logging.ERROR)
 
 # ---------------------------- DLAG ----------------------------#
-bot = telebot.TeleBot('token') #ضع توكن بوتك بدل كلمه token
+bot = telebot.TeleBot('8023654354:AAFnbZODZgVVVuzJmn7JpOmrz6TaEfh4Moo') #ضع توكن بوتك بدل كلمه token
 
 
 user_data = {}
@@ -46,8 +46,7 @@ def start(message):
 
 يمكنك الحصول علي Api id || api hash من موقع  ( https://my.telegram.org/auth )
 
-شرح كيفا تجيب Api id, api hash لحسابك التلي
-https://t.me/gn_yn/7
+شرح كيفا تجيب Api id, api hash لحسابك التلي
 فقط اتبع الخطوات :
     """, reply_markup=markup)
     bot.send_message(message.chat.id,("ادخل ال api id الخاص بك الان"))
