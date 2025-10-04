@@ -7,10 +7,10 @@ from telegram.ext import (
 
 # ====== CONFIG ======
 # IMPORTANT: Replace the placeholders below with your real values BEFORE running.
-BOT_TOKEN = "PUT_YOUR_BOT_TOKEN_HERE"   # <-- استبدل هنا توكن البوت (مثلاً: "123:ABC...")
-OWNER_ID = 123456789                    # <-- استبدل هنا رقمك (int)
-BOT_CHANNEL = "@YourChannel"            # optional
-DEV_CONTACT = "tg://user?id=123456789"  # optional (link to owner)
+BOT_TOKEN = "8455080896:AAHE6c1Cji8s7Zj9EQLTOb-Ge_lwGiMwozs"   # <-- استبدل هنا توكن البوت (مثلاً: "123:ABC...")
+OWNER_ID = 7934749229                    # <-- استبدل هنا رقمك (int)
+BOT_CHANNEL = "@JO7NB"            # optional
+DEV_CONTACT = "https://t.me/CH_XE"  # optional (link to owner)
 DB_PATH = "bot_data.db"
 # ====================
 
