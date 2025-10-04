@@ -6,11 +6,11 @@ from telegram.ext import (
 )
 
 # ====== CONFIG ======
-# IMPORTANT: Replace the placeholders below with your real values BEFORE running.
-BOT_TOKEN = "8455080896:AAHE6c1Cji8s7Zj9EQLTOb-Ge_lwGiMwozs"   # <-- استبدل هنا توكن البوت (مثلاً: "123:ABC...")
-OWNER_ID = 7934749229                    # <-- استبدل هنا رقمك (int)
-BOT_CHANNEL = "@JO7NB"            # optional
-DEV_CONTACT = "https://t.me/CH_XE"  # optional (link to owner)
+# Replace these before running:
+BOT_TOKEN = "8455080896:AAHE6c1Cji8s7Zj9EQLTOb-Ge_lwGiMwozs"
+OWNER_ID = 7934749229
+BOT_CHANNEL = "@JO7NB"
+DEV_CONTACT = "https://t.me/CH_XE"
 DB_PATH = "bot_data.db"
 # ====================
 
@@ -21,16 +21,16 @@ logger = logging.getLogger(__name__)
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    # global required lists (used for start/check across private usage as earlier)
+    # global required lists
     c.execute("CREATE TABLE IF NOT EXISTS required_channels (chat TEXT UNIQUE)")
     c.execute("CREATE TABLE IF NOT EXISTS required_groups (chat TEXT UNIQUE)")
     c.execute("CREATE TABLE IF NOT EXISTS required_bots (username TEXT UNIQUE)")
     c.execute("CREATE TABLE IF NOT EXISTS developers (id INTEGER PRIMARY KEY)")
-    # per-group channel (one channel per group)
-    c.execute(\"\"\"CREATE TABLE IF NOT EXISTS group_channels (
+    # per-group channel
+    c.execute("""CREATE TABLE IF NOT EXISTS group_channels (
                  group_id INTEGER PRIMARY KEY,
                  channel TEXT
-                 )\"\"\")
+                 )""")
     conn.commit()
     conn.close()
 
@@ -93,35 +93,27 @@ def is_admin(uid):
 
 async def is_member(chat_identifier, user_id, context: ContextTypes.DEFAULT_TYPE):
     try:
+        # accept @username or chat id or full link
         chat = await context.bot.get_chat(chat_identifier)
         member = await context.bot.get_chat_member(chat.id, user_id)
         return member.status not in ("left", "kicked")
     except Exception:
         return False
 
-async def check_subscription_global(user_id, context):
-    missing = []
-    for ch in list_required("channel"):
-        if not await is_member(ch, user_id, context): missing.append(ch)
-    for g in list_required("group"):
-        if not await is_member(g, user_id, context): missing.append(g)
-    for b in list_required("bot"):
-        missing.append(b + " (بوت)")
-    return missing
-
 _channel_pattern = re.compile(r"(@[A-Za-z0-9_]{5,}|t.me/[A-Za-z0-9_]{5,}|https?://t.me/[A-Za-z0-9_]{5,})")
 
 def parse_channel_from_text(txt: str):
+    if not txt: return None
     txt = txt.strip()
-    # direct @username or full t.me/... or raw link
     m = _channel_pattern.search(txt)
     if m:
         s = m.group(0)
-        # normalize to @username if possible
         if s.startswith("t.me/") or s.startswith("http"):
             s = s.split("/")[-1]
             return "@" + s
         return s if s.startswith("@") else "@" + s
+    if txt.startswith("@") and len(txt) > 5:
+        return txt
     return None
 
 # ====== Handlers ======
@@ -133,9 +125,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     await update.message.reply_text("👋 مرحباً! اضفني إلى مجموعتك لتفعيل الاشتراك الإجباري.", reply_markup=InlineKeyboardMarkup(kb))
 
-# admin panel shown by /admin (developer only)
 async def admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not is_admin(update.effective_user.id):
+    uid = update.effective_user.id
+    if not is_admin(uid):
         await update.message.reply_text("🚫 ليس لديك صلاحية الوصول للوحة المطور.")
         return
     kb = [
@@ -167,7 +159,7 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data in ("promote_dev", "demote_dev"):
         context.user_data["expecting"] = data
-        await q.edit_message.reply_text("✏️ أرسل الآن معرف المستخدم (user_id) أو @username لترقيته/تنزيله.")
+        await q.edit_message_text("✏️ أرسل الآن معرف المستخدم (user_id) أو @username لترقيته/تنزيله.")
         return
 
     if data == "stats":
@@ -193,7 +185,6 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
             content += "👥 القروبات:\n" + "\n".join(f"- {g}" for g in groups) + "\n\n"
         if bots:
             content += "🤖 البوتات:\n" + "\n".join(f"- {b} → https://t.me/{b.lstrip('@')}" for b in bots) + "\n\n"
-        # also include per-group channels
         conn = sqlite3.connect(DB_PATH); c = conn.cursor()
         c.execute("SELECT group_id, channel FROM group_channels")
         rows = c.fetchall(); conn.close()
@@ -208,7 +199,6 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_document(InputFile("subscriptions.txt"), caption="📋 القوائم الحالية.")
         return
 
-# When admin/user sends free text expecting an admin action
 async def text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     text = update.message.text.strip()
@@ -225,7 +215,6 @@ async def text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 add_required("group", target)
                 await update.message.reply_text(f"✅ تم إضافة {target} إلى القروبات العامة.")
             elif kind == "bot":
-                # normalize bot
                 if not target.startswith("@"): target = "@" + target.lstrip("@")
                 add_required("bot", target)
                 await update.message.reply_text(f"✅ تم إضافة {target} إلى البوتات العامة.")
@@ -240,7 +229,7 @@ async def text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     target_id = u.id
                 else:
                     target_id = int(text)
-            except Exception as e:
+            except Exception:
                 await update.message.reply_text("❌ تعذر تحديد المستخدم. أرسل @username أو user_id صحيح.")
                 context.user_data.pop("expecting", None)
                 return
@@ -252,10 +241,10 @@ async def text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
     # ===== GROUP-SPECIFIC flows =====
-    # If message is in a group and the bot is tracking an 'expecting' for that chat, handle it
     if update.effective_chat.type in ("group", "supergroup"):
         chat_data = context.chat_data
-        # if previously someone triggered add/remove for this chat
+        low = text.lower()
+        # handle "اضف قناة" trigger
         if chat_data.get("expecting") == "add_channel":
             channel = parse_channel_from_text(text) or text
             set_group_channel(update.effective_chat.id, channel)
@@ -267,8 +256,6 @@ async def text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_data.pop("expecting", None)
             await update.message.reply_text("✅ تم إزالة القناة الإلزاميّة لهذا القروب.")
             return
-        # trigger by typing words (without /)
-        low = text.lower()
         if low in ("اضف قناة", "اضافة قناة", "اضف القناة"):
             chat_data["expecting"] = "add_channel"
             await update.message.reply_text("📢 يرجى إرسال يوزر القناة (مثل @example) أو رابطها (t.me/...) ليتم تفعيل الاشتراك الإجباري هنا.")
@@ -278,9 +265,8 @@ async def text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("🗑️ سيتم حذف القناة الإلزاميّة لهذا القروب. أرسل أي رسالة للتأكيد.")
             return
 
-    # If we reach here, handle /start or others in private
+    # private fallback
     if update.effective_chat.type == "private":
-        # standard /start handled separately; for free text in private we can reply help text
         await update.message.reply_text("أرسل /start أو /admin (للمطور) لإدارة البوت.")
 
 # When someone posts in any group - enforce per-group channel if set
@@ -288,14 +274,12 @@ async def group_message_enforcer(update: Update, context: ContextTypes.DEFAULT_T
     msg = update.message
     if not msg or not msg.from_user:
         return
-    # ignore the special control phrases above - they are handled in text_input
-    # check per-group channel
+    # skip if bot message
+    if msg.from_user.is_bot:
+        return
     gid = update.effective_chat.id
     channel = get_group_channel(gid)
     if not channel:
-        return  # nothing to enforce for this group
-    # if sender is a bot or the chat itself, skip
-    if msg.from_user.is_bot:
         return
     # check membership
     if not await is_member(channel, msg.from_user.id, context):
@@ -304,8 +288,11 @@ async def group_message_enforcer(update: Update, context: ContextTypes.DEFAULT_T
         except Exception:
             pass
         mention = msg.from_user.mention_html()
+        # button with channel name linking to channel
+        btn = InlineKeyboardButton(channel, url=f"https://t.me/{channel.lstrip('@')}")
+        kb = InlineKeyboardMarkup([[btn]])
         text = f"{mention} 🚫 لازم تشترك في {channel} عشان تقدر ترسل هنا."
-        await update.effective_chat.send_message(text, parse_mode="HTML")
+        await update.effective_chat.send_message(text, parse_mode="HTML", reply_markup=kb)
         return
 
 # fallback handler for /start to show same keyboard
