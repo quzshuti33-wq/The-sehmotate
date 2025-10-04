@@ -6,10 +6,10 @@ from telegram.ext import (
 )
 
 # ==== CONFIG ====
-BOT_TOKEN = "ضع_التوكن_هنا"
-OWNER_ID = 123456789
-BOT_CHANNEL = "@YourChannel"
-DEV_CONTACT = "tg://user?id=123456789"
+BOT_TOKEN = "8455080896:AAFodUYuWKL18itWn1vLs8cefV-P-hE9_2A"
+OWNER_ID = 7934749229
+BOT_CHANNEL = "@JO7NB"
+DEV_CONTACT = "tg://user?id=7934749229"
 DB_PATH = "bot_data.db"
 # ================
 
@@ -75,7 +75,7 @@ async def check_subscription(user_id,context):
 async def start(update:Update, context:ContextTypes.DEFAULT_TYPE):
     kb=[
         [InlineKeyboardButton("➕ اضفني إلى مجموعتك", url=f"https://t.me/{context.bot.username}?startgroup=new")],
-        [InlineKeyboardButton("📢 قناة البوت",url=f"https://t.me/{BOT_CHANNEL.lstrip('@')}"),
+        [InlineKeyboardButton("📢 قناة البوت",url=f"https://t.me/{BOT_CHANNEL.lstrip('@JO7NB')}"),
          InlineKeyboardButton("👨‍💻 المطور",url=DEV_CONTACT)]
     ]
     await update.message.reply_text("👋 مرحباً! اضفني إلى مجموعتك لتفعيل الاشتراك الإجباري.", 
