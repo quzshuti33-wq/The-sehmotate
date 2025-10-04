@@ -6,10 +6,10 @@ from telegram.ext import (
 )
 
 # ==== CONFIG ====
-BOT_TOKEN = "ضع_التوكن_هنا"
-OWNER_ID = 123456789
-BOT_CHANNEL = "@YourChannel"
-DEV_CONTACT = "tg://user?id=123456789"
+BOT_TOKEN = "8455080896:AAHOF09mTcV6XT7RkEnBFK96uSG6qfXEOI8"
+OWNER_ID = 7934749229 
+BOT_CHANNEL = "@QQICX1"
+DEV_CONTACT = "tg://user?id=7934749229"
 DB_PATH = "bot_data.db"
 # ================
 
