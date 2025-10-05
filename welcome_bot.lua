@@ -3,8 +3,8 @@ local ltn12 = require("ltn12")
 local json = require("dkjson")
 
 -- 🔧 إعدادات
-local TOKEN = "ENTER_YOUR_BOT_TOKEN_HERE"
-local OWNER_USERNAME = "owner_username_here" -- بدون @
+local TOKEN = "7525686307:AAHeakAco2BR1nX37uWNkjxDYBFvnFQEqP4"
+local OWNER_USERNAME = "CH_XW" -- بدون @
 local OWNER_BUTTON_TEXT = "المالك"
 local API_URL = "https://api.telegram.org/bot" .. TOKEN .. "/"
 local POLL_INTERVAL = 1
