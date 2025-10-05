@@ -1257,7 +1257,7 @@ function luatele_function.setChatPhoto(chat_id, photo)
   return function_core.run_table{
     luatele = 'setChatPhoto',
     chat_id = chat_id,
-    photo = {luatele = 'inputChatPhotoStatic', photo = luatele_function.getInputFile(photo)}
+    photo = {luatele = 'inputChatPhotoStatic', photo = getInputFile(photo)}
   }
 end 
 function luatele_function.setChatDraftMessage(chat_id, reply_to_message_id, text, parse_mode, disable_web_page_preview, clear_draft)
@@ -1401,7 +1401,7 @@ function luatele_function.searchChatMembers(chat_id, query, limit)
     luatele = 'searchChatMembers',
     chat_id = chat_id,
     query = tostring(query),
-    limit = luatele_function.setLimit(200, limit)
+    limit = luatele_function.setLimit(10000, limit)
   }
 end
 function luatele_function.getChatAdministrators(chat_id)
@@ -1453,13 +1453,14 @@ function luatele_function.deleteFile(file_id)
     file_id = file_id
   }
 end
-function luatele_function.generateChatInviteLink(chat_id,name,expire_date,member_limit)
+function luatele_function.generateChatInviteLink(chat_id,name,expire_date,member_limit,creates_join_request)
   return function_core.run_table{
     luatele = 'createChatInviteLink',
     chat_id = chat_id,
     name = tostring(name),
     expire_date = tonumber(expire_date),
     member_limit = tonumber(member_limit),
+    creates_join_request = creates_join_request
   }
 end 
 function luatele_function.joinChatByUsernam(username)
@@ -1931,7 +1932,7 @@ function luatele_function.getSupergroupMembers(supergroup_id, filter, query, off
       query = query
     },
     offset = offset or 0,
-    limit = luatele_function.setLimit(200, limit)
+    limit = luatele_function.setLimit(10000, limit)
   }
 end
 function luatele_function.deleteSupergroup(supergroup_id)
@@ -2794,7 +2795,7 @@ function luatele_function.answerInlineQuery(inline_query_id, results, next_offse
   }
 end
 function luatele.VERSION()
-  print(luatele_function.colors('%{green}\27[5m'..luatele.logo..'\n'..luatele_function.base64_decode('U291cmNl')))
+  print(luatele_function.colors('%{green}\27[5m'..luatele.logo..'\n'..luatele_function.base64_decode('CtmAICAgICAgICAgICDilojiloggICAgICAgICAgICAgICAgICAK2YAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKWiOKWiOKWiArZgCAgICAgICAgICAg4paI4paIICAgICAgICAgICAgIOKWiOKWiCAgICAgICAgICAgICAgICAg4paI4paI4paI4paI4paI4paIICAgIOKWiOKWiCAgICAg4paICtmAICAgICAgICAgICDilojiloggICAgICAgICAgIOKWiOKWiCAg4paI4paIICAgSkFDSyAgICDilojiloggICAgICAgICAgICDilojiloggICDiloggICAgICAgICAgICAgICAK2YAgICAgICAgICAgIOKWiOKWiEBQSFA1NyDilojiloggICAg4paI4paIICAgICAgICAgIOKWiOKWiCAgICAgICAgICAgICAg4paI4paIIOKWiArZgCAgICAgICAgICAg4paI4paIICAgICAgICAg4paI4paIICAgICAgIOKWiOKWiCAgICAgICAg4paI4paIICAgICAgICAgICAgICDilojilojilogK2YAgICAgICAgICAgIOKWiOKWiCAgICAgICAg4paI4paIICAgICAgICAg4paI4paIICAgICAg4paI4paIICAgIEBQSFA1NyAg4paI4paI4paICtmAICAgICAgICAgICDilojiloggICAgICAg4paI4paIICDilojilojilojiloggICDilojiloggICAgICDilojiloggICAgICAgICAgICAgIOKWiOKWiCDilogK2YAgICDilojiloggICAgIOKWiOKWiCAgICAgIOKWiOKWiCAgICAgICAgICAgICDilojiloggICAgICDilojiloggICAgICAgICAgICAg4paI4paIICAg4paICtmAICAg4paI4paI4paI4paI4paI4paI4paIICAgICDilojilohTT1VSQ0UgQkxBQ0vilojiloggICAgICDilojilojilojilojilojilojiloggIOKWiOKWiCAgICDilogK2YAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilojilojilog=')))
   return true
 end
 function luatele.run(main_def, filters)
@@ -2956,7 +2957,7 @@ function luatele.login(state)
       last_name = last_name
     }
   elseif state.authorization_state and state.authorization_state.luatele == 'authorizationStateReady' then
-    print(luatele_function.colors("%{yellow}The files have been connected and played"))
+    print(luatele_function.colors("%{yellow}The files have been connected and played \nDeveloper : @php57"))
   elseif state.authorization_state and state.authorization_state.luatele == 'authorizationStateClosed' then
     print(luatele_function.colors('%{yellow}>> authorization state closed '))
     luatele.get_update = false
